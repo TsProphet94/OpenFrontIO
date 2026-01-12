@@ -28,6 +28,9 @@ export class GameMapAdapter implements GraphAdapter<TileRef> {
   }
 
   isTraversable(from: TileRef, to: TileRef): boolean {
+    if (this.gameMap.isObstacle(from) || this.gameMap.isObstacle(to)) {
+      return false;
+    }
     const toWater = this.gameMap.isWater(to);
     if (this.waterPath) {
       return toWater;

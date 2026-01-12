@@ -377,6 +377,7 @@ export enum TerrainType {
   Mountain,
   Lake,
   Ocean,
+  Obstacle,
 }
 
 export enum PlayerType {
