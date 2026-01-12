@@ -40,43 +40,18 @@ export async function loadTerrainMap(
   const mapFiles = terrainMapFileLoader.getMapData(map);
   const manifest = await mapFiles.manifest();
 
-  const [
-    mapBin,
-    map4xBin,
-    map16xBin,
-    obstaclesBin,
-    obstacles4xBin,
-    obstacles16xBin,
-  ] = await Promise.all([
-    mapFiles.mapBin(),
-    mapFiles.map4xBin(),
-    mapFiles.map16xBin(),
-    mapFiles.obstaclesBin?.(),
-    mapFiles.obstacles4xBin?.(),
-    mapFiles.obstacles16xBin?.(),
-  ]);
-
   const gameMap =
     mapSize === GameMapSize.Normal
-      ? await genTerrainFromBin(manifest.map, mapBin, obstaclesBin ?? undefined)
-      : await genTerrainFromBin(
-          manifest.map4x,
-          map4xBin,
-          obstacles4xBin ?? undefined,
-        );
+      ? await genTerrainFromBin(manifest.map, await mapFiles.mapBin())
+      : await genTerrainFromBin(manifest.map4x, await mapFiles.map4xBin());
 
   const miniMap =
     mapSize === GameMapSize.Normal
       ? await genTerrainFromBin(
           mapSize === GameMapSize.Normal ? manifest.map4x : manifest.map16x,
-          map4xBin,
-          obstacles4xBin ?? undefined,
+          await mapFiles.map4xBin(),
         )
-      : await genTerrainFromBin(
-          manifest.map16x,
-          map16xBin,
-          obstacles16xBin ?? undefined,
-        );
+      : await genTerrainFromBin(manifest.map16x, await mapFiles.map16xBin());
 
   if (mapSize === GameMapSize.Compact) {
     manifest.nations.forEach((nation) => {
@@ -99,7 +74,6 @@ export async function loadTerrainMap(
 export async function genTerrainFromBin(
   mapData: MapMetadata,
   data: Uint8Array,
-  obstacles?: Uint8Array,
 ): Promise<GameMap> {
   if (data.length !== mapData.width * mapData.height) {
     throw new Error(
@@ -112,6 +86,5 @@ export async function genTerrainFromBin(
     mapData.height,
     data,
     mapData.num_land_tiles,
-    obstacles,
   );
 }

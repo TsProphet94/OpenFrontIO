@@ -19,7 +19,6 @@ export interface GameMap {
   isOceanShore(ref: TileRef): boolean;
   isOcean(ref: TileRef): boolean;
   isShoreline(ref: TileRef): boolean;
-  isObstacle(ref: TileRef): boolean;
   magnitude(ref: TileRef): number;
   // State getters and setters (mutable)
   ownerID(ref: TileRef): number;
@@ -61,7 +60,6 @@ export class GameMapImpl implements GameMap {
 
   private readonly terrain: Uint8Array; // Immutable terrain data
   private readonly state: Uint16Array; // Mutable game state
-  private readonly obstacleMask?: Uint8Array; // Immutable obstacle data
   private readonly width_: number;
   private readonly height_: number;
 
@@ -87,23 +85,16 @@ export class GameMapImpl implements GameMap {
     height: number,
     terrainData: Uint8Array,
     private numLandTiles_: number,
-    obstacleMask?: Uint8Array,
   ) {
     if (terrainData.length !== width * height) {
       throw new Error(
         `Terrain data length ${terrainData.length} doesn't match dimensions ${width}x${height}`,
       );
     }
-    if (obstacleMask && obstacleMask.length !== width * height) {
-      throw new Error(
-        `Obstacle data length ${obstacleMask.length} doesn't match dimensions ${width}x${height}`,
-      );
-    }
     this.width_ = width;
     this.height_ = height;
     this.terrain = terrainData;
     this.state = new Uint16Array(width * height);
-    this.obstacleMask = obstacleMask;
     // Precompute the LUTs
     let ref = 0;
     this.refToX = new Array(width * height);
@@ -161,9 +152,6 @@ export class GameMapImpl implements GameMap {
 
   // Terrain getters (immutable)
   isLand(ref: TileRef): boolean {
-    if (this.isObstacle(ref)) {
-      return false;
-    }
     return Boolean(this.terrain[ref] & (1 << GameMapImpl.IS_LAND_BIT));
   }
 
@@ -179,10 +167,6 @@ export class GameMapImpl implements GameMap {
 
   isShoreline(ref: TileRef): boolean {
     return Boolean(this.terrain[ref] & (1 << GameMapImpl.SHORELINE_BIT));
-  }
-
-  isObstacle(ref: TileRef): boolean {
-    return Boolean(this.obstacleMask?.[ref]);
   }
 
   magnitude(ref: TileRef): number {
@@ -255,11 +239,11 @@ export class GameMapImpl implements GameMap {
 
   // Helper methods
   isWater(ref: TileRef): boolean {
-    return !this.isLand(ref) && !this.isObstacle(ref);
+    return !this.isLand(ref);
   }
 
   isLake(ref: TileRef): boolean {
-    return this.isWater(ref) && !this.isOcean(ref);
+    return !this.isLand(ref) && !this.isOcean(ref);
   }
 
   isShore(ref: TileRef): boolean {
@@ -273,9 +257,6 @@ export class GameMapImpl implements GameMap {
   // if updating these magnitude values, also update
   // `../../../map-generator/map_generator.go` `getThumbnailColor`
   terrainType(ref: TileRef): TerrainType {
-    if (this.isObstacle(ref)) {
-      return TerrainType.Obstacle;
-    }
     if (this.isLand(ref)) {
       const magnitude = this.magnitude(ref);
       if (magnitude < 10) return TerrainType.Plains;

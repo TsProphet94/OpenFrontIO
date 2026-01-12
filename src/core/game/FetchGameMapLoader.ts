@@ -30,12 +30,6 @@ export class FetchGameMapLoader implements GameMapLoader {
       mapBin: () => this.loadBinaryFromUrl(this.url(fileName, "map.bin")),
       map4xBin: () => this.loadBinaryFromUrl(this.url(fileName, "map4x.bin")),
       map16xBin: () => this.loadBinaryFromUrl(this.url(fileName, "map16x.bin")),
-      obstaclesBin: () =>
-        this.loadOptionalBinaryFromUrl(this.url(fileName, "obstacles.bin")),
-      obstacles4xBin: () =>
-        this.loadOptionalBinaryFromUrl(this.url(fileName, "obstacles4x.bin")),
-      obstacles16xBin: () =>
-        this.loadOptionalBinaryFromUrl(this.url(fileName, "obstacles16x.bin")),
       manifest: () => this.loadJsonFromUrl(this.url(fileName, "manifest.json")),
       webpPath: async () => this.url(fileName, "thumbnail.webp"),
     } satisfies MapData;
@@ -59,20 +53,6 @@ export class FetchGameMapLoader implements GameMapLoader {
   private async loadBinaryFromUrl(url: string) {
     const response = await fetch(url);
 
-    if (!response.ok) {
-      throw new Error(`Failed to load ${url}: ${response.statusText}`);
-    }
-
-    const data = await response.arrayBuffer();
-    return new Uint8Array(data);
-  }
-
-  private async loadOptionalBinaryFromUrl(url: string) {
-    const response = await fetch(url);
-
-    if (response.status === 404) {
-      return null;
-    }
     if (!response.ok) {
       throw new Error(`Failed to load ${url}: ${response.statusText}`);
     }

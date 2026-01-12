@@ -182,12 +182,6 @@ export class PastelTheme implements Theme {
           g: 230 + mag / 2,
           b: 230 + mag / 2,
         });
-      case TerrainType.Obstacle:
-        return colord({
-          r: 0,
-          g: 0,
-          b: 0,
-        });
     }
   }
 
