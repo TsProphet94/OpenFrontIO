@@ -173,6 +173,15 @@ func processMap(name string, isTest bool) error {
 	if err := os.WriteFile(filepath.Join(mapDir, "map16x.bin"), result.Map16x.Data, 0644); err != nil {
 		return fmt.Errorf("failed to write combined binary for %s: %w", name, err)
 	}
+	if err := os.WriteFile(filepath.Join(mapDir, "obstacles.bin"), result.Obstacles.Data, 0644); err != nil {
+		return fmt.Errorf("failed to write obstacle data for %s: %w", name, err)
+	}
+	if err := os.WriteFile(filepath.Join(mapDir, "obstacles4x.bin"), result.Obs4x.Data, 0644); err != nil {
+		return fmt.Errorf("failed to write obstacle data for %s: %w", name, err)
+	}
+	if err := os.WriteFile(filepath.Join(mapDir, "obstacles16x.bin"), result.Obs16x.Data, 0644); err != nil {
+		return fmt.Errorf("failed to write obstacle data for %s: %w", name, err)
+	}
 	if err := os.WriteFile(filepath.Join(mapDir, "thumbnail.webp"), result.Thumbnail, 0644); err != nil {
 		return fmt.Errorf("failed to write thumbnail for %s: %w", name, err)
 	}

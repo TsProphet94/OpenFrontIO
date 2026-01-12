@@ -88,6 +88,17 @@ export class WaterComponents {
    */
   private premarkLandTilesDirect(ids: Uint8Array): void {
     const terrain = (this.map as any).terrain as Uint8Array;
+    const obstacleMask = (this.map as any).obstacleMask as
+      | Uint8Array
+      | undefined;
+
+    if (obstacleMask) {
+      for (let i = 0; i < this.numTiles; i++) {
+        const isLand = (terrain[i] & 0b10000000) !== 0;
+        ids[i] = isLand || obstacleMask[i] ? LAND_MARKER : 0;
+      }
+      return;
+    }
 
     // Write 4 bytes at once using Uint32Array view for better performance
     const numChunks = Math.floor(this.numTiles / 4);
